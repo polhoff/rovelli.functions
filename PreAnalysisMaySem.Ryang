@@ -1,0 +1,110 @@
+
+PreAnalysisMaySem <- function ( SiteCode )
+	{
+	#library (rovelli)
+	
+	SiteCode <- 'AS2'
+	#once these have been processed
+	#the resulting datasets must be saved in the library 'rovelli'
+	#then the library re-installed including the new datasets
+
+		
+	x1 <- ReadRovelliDataOrig ( infile = 'C1AS2_CTD.gnumeric', outname = 'Sem_AS2_2013_05_01_orig' )
+	x1 <- ReadRovelliDataOrig ( infile = 'C1AS2_Wind.gnumeric', outname = 'Sem_AS2_2013_05_01_wind_orig' )
+	x1 <- ReadRovelliDataOrig ( infile = 'C1AS2_PAR.gnumeric', outname = 'Sem_AS2_2013_05_01_PAR_orig' )
+
+
+	#again, once these have been processed
+	#the resulting datasets must be saved in the library 'rovelli'
+	#then the library re-installed including the new datasets
+	lon = LonLatSite (SiteCode)['lon'] ; lat = LonLatSite (SiteCode)['lat']
+	ProcessRovelliDataOrig ( infile = 'Sem_AS2_2013_05_01_orig', c_library = 'rovelli', outname = 'Sem_AS2_2013_05_01', lon, lat )
+
+	load ( paste ( dirdmp, 'Sem_AS2_2013_05_01.rda', sep = ''))
+	
+	data (Sem_AS2_2013_05_01_PAR_orig)
+		
+	str (Sem_AS2_2013_05_01_PAR_orig)
+	Sem_AS2_2013_05_01_PAR_orig$date <- as.POSIXct (Sem_AS2_2013_05_01_PAR_orig$date)
+	with (Sem_AS2_2013_05_01_PAR_orig, plot ( date, PARraw ))
+	summary (Sem_AS2_2013_05_01_PAR_orig)
+	
+	
+	#additional processing for Sem because of PAR problem
+	banana = with (Sem_AS2_2013_05_01_PAR_orig, approxfun ( date, PARraw ))
+	Sem_AS2_2013_05_01$PARraw <- banana ( Sem_AS2_2013_05_01$date )
+
+
+	str (Sem_AS2_2013_05_01)
+	head(Sem_AS2_2013_05_01)
+
+	save ( Sem_AS2_2013_05_01, file = paste ( dirdmp, 'Sem_AS2_2013_05_01.rda', sep = ''))
+	load ( paste ( dirdmp, 'Sem_AS2_2013_05_01.rda', sep = ''))
+
+
+
+	indata <- Sem_AS2_2013_05_01
+	
+	with  (Sem_AS2_2013_05_01, plot (date, DO))
+	with  (Sem_AS2_2013_05_01, plot (date, DO_diff))
+	with  (Sem_AS2_2013_05_01, plot (date, DO_diff_diff))
+
+	
+	
+	sss <- (Sem_AS2_2013_05_01$DO_diff_diff)^2
+	x_ndx <- which (sss > (0.1 ^ 2))
+	x_ndx <- c ( x_ndx - 1, x_ndx, x_ndx + 1)
+	x_ndx <- sort ( unique ( x_ndx ))
+
+
+
+
+	Sem_AS2_2013_05_01$qualityFilter <- 3
+	Sem_AS2_2013_05_01$qualityFilter[x_ndx] <- 1
+	
+	data_sub <- Sem_AS2_2013_05_01[Sem_AS2_2013_05_01$qualityFilter < 2,]
+
+	with  (Sem_AS2_2013_05_01, plot (date, DO_diff_diff))
+    points (data_sub$date, data_sub$DO_diff_diff, col = 'red')
+
+
+    with  (Sem_AS2_2013_05_01, plot (date, DO_diff))
+    points (data_sub$date, data_sub$DO_diff, col = 'red')
+
+    
+    with  (Sem_AS2_2013_05_01, plot (date, DO))
+    points (data_sub$date, data_sub$DO, col = 'red')
+
+
+
+
+
+	str (Sem_AS2_2013_05_01)
+	head(Sem_AS2_2013_05_01)
+
+	save ( Sem_AS2_2013_05_01, file = paste ( dirdmp, 'Sem_AS2_2013_05_01.rda', sep = ''))
+	
+	
+	
+	
+	
+	
+	data ( Sem_AS2_2013_05_01_wind_orig )
+		
+	
+	Sem_AS2_2013_05_01_wind <- Sem_AS2_2013_05_01_wind_orig
+	
+	with (Sem_AS2_2013_05_01_wind, print (which (date = '--')))
+	with (Sem_AS2_2013_05_01_wind, print (which (windspeed_mpersec == '--')))
+	
+	with (Sem_AS2_2013_05_01_wind, table (windspeed_mpersec))
+	
+	
+	Sem_AS2_2013_05_01_wind[5071,] <- NA
+	
+	
+	Sem_AS2_2013_05_01_wind$date <- as.POSIXct (Sem_AS2_2013_05_01_wind$date)
+	Sem_AS2_2013_05_01_wind$windspeed_mpersec <- as.numeric (Sem_AS2_2013_05_01_wind$windspeed_mpersec)
+	
+	save ( Sem_AS2_2013_05_01_wind, file = paste ( dirdmp, 'Sem_AS2_2013_05_01_wind.rda', sep = ''))
+	}

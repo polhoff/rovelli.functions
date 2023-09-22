@@ -1,0 +1,135 @@
+
+#This is because the NA values are removed from the data to be fit (and your data has quite a few of them); hence, when you plot fit.lm$fitted the plot method is interpreting the index of that series as the 'x' values to plot it against.
+
+#Try this [note how I've changed variable names to prevent conflicts with the functions time and data (read this post)]:
+
+Time <- as.numeric (x_fit$JulianDay)
+temperature <- x_fit$TempMax
+
+xc<-cos(2*pi*Time/366)
+xs<-sin(2*pi*Time/366)
+fit.lm <- lm(temperature~xc+xs)
+
+# access the fitted series (for plotting)
+fit <- fitted(fit.lm)  
+
+# find predictions for original time series
+pred_max <- predict(fit.lm, newdata=data.frame(Time=Time))    
+
+#plot(temperature ~ Time, data= Data, xlim=c(1, 900))
+#lines(fit, col="red")
+lines(Time, pred_max, col="red")
+
+
+
+#fit minimum
+#fit minimum
+#fit minimum
+#fit minimum
+#fit minimum
+temperature <- x_fit$TempMin
+fit.lm <- lm(temperature~xc+xs)
+
+# access the fitted series (for plotting)
+fit <- fitted(fit.lm)  
+
+# find predictions for original time series
+pred_min <- predict(fit.lm, newdata=data.frame(Time=Time))    
+
+lines(Time, pred_min, col="green")
+
+
+Temp_Max_min_df <- data.frame (x_fit$JulianDay, pred_max, pred_min)
+names (Temp_Max_min_df)[1] <- c ('JulianDay')
+
+
+indata <- DO_Ebble
+indata$JulianDay <- JulianDay(indata$date)
+
+
+indata1 <- merge (indata, Temp_Max_min_df)
+head(indata1)
+
+indata1 <- indata1 [order (indata1$date),]
+
+
+indata1$TempEst <- indata1$Temp 
+indata1$TempEst <- indata1$Temp 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+time_2013 <- seq ( as.POSIXct ('2013-01-01 00:00:00'), as.POSIXct ('2014-12-31 23:00:00'), by = 60*60 )
+
+#time_mod <- mod (time_2013, 86400)
+time_mod <- (as.numeric (time_2013) - (8 * 60 * 60)) %% 86400
+time_mod <- time_mod / 86400
+time_mod_pi <- time_mod * 2* pi
+#time_mod
+
+time_mod[1:24]
+time_mod[1:24] * (2*pi)
+time_2013[1:24]
+
+time_mod_sine <- sin(time_mod_pi)
+#make between zero and 1
+time_mod_sine <- (time_mod_sine + 1) / 2
+plot (time_mod_sine)
+
+banana <- approxfun ( time_2013, time_mod_sine)
+
+
+
+
+
+
+x_pi <- seq ( 0, 2 * pi, length = 24)
+plot ( sin ( x_pi ))
+
+
+
+
+
+
+
+
+
+
+indata1$sine_pi <- banana (indata1$date)
+indata1$TempEst1 <- with (indata1, (pred_max - pred_min) * sine_pi + pred_min)
+
+plot (indata1$Temp, indata1$TempEst1) 
+
+indata1$TempEst <- indata1$Temp
+indata1$TempEst[is.na(indata1$Temp)] <- indata1$TempEst1[is.na(indata1$Temp)]
+
+
+plot (indata1$date, indata1$TempEst) 
+
+
+x222 <- 37300:38300
+plot ( indata1$date[x222], indata1$TempEst[x222] )
+plot ( indata1$date[x222], indata1$TempEst1[x222] )
+
+
+DO_Ebble_with_TempEst <- indata1

@@ -1,0 +1,55 @@
+
+
+FitSineCurve <- function ( x1, x2 )
+	{
+	#Time <- as.numeric (x_fit$JulianDay)
+	#temperature <- x_fit$TempMax
+
+	xc <- cos(2*pi* x1/366)
+	xs <- sin(2*pi* x1/366)
+	fit.lm <- lm( x2 ~ xc+xs)
+
+	# access the fitted series (for plotting)
+	fit <- fitted(fit.lm)  
+
+	# find predictions for original time series
+	pred_var <- predict(fit.lm, newdata=data.frame(x1=x1))    
+
+	lines(x1, pred_var, col="red")
+	}
+
+
+
+#fit minimum
+#fit minimum
+#fit minimum
+#fit minimum
+#fit minimum
+temperature <- x_fit$TempMin
+fit.lm <- lm(temperature~xc+xs)
+
+# access the fitted series (for plotting)
+fit <- fitted(fit.lm)  
+
+# find predictions for original time series
+pred_min <- predict(fit.lm, newdata=data.frame(Time=Time))    
+
+lines(Time, pred_min, col="green")
+
+
+Temp_Max_min_df <- data.frame (x_fit$JulianDay, pred_max, pred_min)
+names (Temp_Max_min_df)[1] <- c ('JulianDay')
+
+
+indata <- DO_Ebble
+indata$JulianDay <- JulianDay(indata$date)
+
+
+indata1 <- merge (indata, Temp_Max_min_df)
+head(indata1)
+
+indata1 <- indata1 [order (indata1$date),]
+
+
+indata1$TempEst <- indata1$Temp 
+indata1$TempEst <- indata1$Temp 

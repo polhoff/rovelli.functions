@@ -1,0 +1,38 @@
+
+PlotGeneric <- function ( indata = output_analysis, c_indata, SiteCode)
+	{
+	c_names <- names (indata)
+	
+	for ( i in 1:length (c_names))
+		{
+		assign ( c_names[i], indata[[i]] )
+		}
+	
+	PlotDayNight ( c_indata )
+	PlotDeficit_DODiff ( c_indata )
+
+	PlotRegressionER_Ks ( c_indata = c_indata )
+	PlotRegressionER_Ks_01 ( c_indata = c_indata )
+	PlotRegressionER_Ks_02 ( c_indata = c_indata )
+	PlotRegressionER_Ks_03 ( c_indata = c_indata )
+	PlotRegressionER_Ks_Res ( c_indata = c_indata )
+
+	PlotDOPhot ( compute_DOPhot )
+
+	PlotModelOutputNightTime ( paste (c_indata, '_ModelNight', sep = ''))
+	
+	
+	PlotModelOutputDay ( indata = Sem_AS2_2013_05_01_ModelDayNight )
+	
+	PlotDOObsSimDiff ( indata = Sem_AS2_2013_05_01_ModelDayNight, SiteCode = 'AS2', start_date = as.POSIXct('2013-04-30'), end_date = as.POSIXct('2013-05-03 05:30:00'))
+	
+	PlotDOObsSimDiff ( indata = Sem_AS2_2013_05_01_ModelDayNight, SiteCode = 'AS2', start_date = as.POSIXct('2013-04-30'), end_date = as.POSIXct('2013-05-03 05:30:00'))
+	
+	PlotPartitions (indata = Sem_AS2_2013_05_01_ModelDayNight)
+	PlotPartitionsHour (indata = Sem_AS2_2013_05_01_ModelDayNight)
+	}
+
+#library (parker); library (rovelli)
+#output_analysis <- AnalysisGeneric (3)	
+#PlotMaySem()
+#ClsDev()

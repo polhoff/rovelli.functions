@@ -1,0 +1,95 @@
+
+FullAnalysisAprilEbble <- function ( SiteCode )
+	{
+
+	#once these have been processed
+	#the resulting datasets must be saved in the library 'rovelli'
+	#then the library re-installed including the new datasets
+		
+	x1 <- ReadRovelliDataOrig ( infile = 'C2CE1ec2.gnumeric', outname = 'Ebble_CE1_2013_04_25_orig' )
+	x1 <- ReadRovelliDataOrig ( infile = 'C2CE1wind.gnumeric', outname = 'Ebble_CE1_2013_04_25_wind_orig' )
+
+
+	#again, once these have been processed
+	#the resulting datasets must be saved in the library 'rovelli'
+	#then the library re-installed including the new datasets
+	lon = LonLatSite ('CE1')['lon'] ; lat = LonLatSite ('CE1')['lat']
+	ProcessRovelliDataOrig ( infile = 'Ebble_CE1_2013_04_25_orig', c_library = 'rovelli', outname = 'Ebble_CE1_2013_04_25', lon, lat )
+
+	
+
+	PlotWindspeed ()
+
+
+	PlotPmaxByHourSegment ( c_indata1 = 'Ebble_Eddy', c_indata2 = 'Ebble_ER_Ks0_timeseries', c_library = 'rovelli', n_date = as.Date ('2013-04-26'), timeinterval = 120, lon = -1.92392, lat = 51.02816, l_png = F, l_tif1 = F, cex_axis = 1.6, cex_lab = 1.6, cex_main = 1.6, n_height = 600, SiteCode = 'CE1', outfile = 'PmaxByHour.png' )
+
+	PlotDayNight ( 'Ebble_CE1_2013_04_25' )
+	PlotDeficit_DODiff ( 'Ebble_CE1_2013_04_25' )
+
+
+	#calculate coefficients ER and Ks and save as new data sets
+	#the resulting datasets must be saved in the library 'rovelli'
+	#then the library re-installed including the new datasets
+	FitRegressionParameters ( c_indata = 'Ebble_CE1_2013_04_25' )
+	PlotRegressionER_Ks ( c_indata = 'Ebble_CE1_2013_04_25' )
+	PlotRegressionER_Ks_01 ( c_indata = 'Ebble_CE1_2013_04_25' )
+
+
+	#make ER Ks time series for a particular data set
+	ER_Ks_timeseries <- MakeERKsTimeSeries ('Ebble_CE1_2013_04_25', 'Ebble_CE1_2013_04_25_ER_Ks')
+	
+	
+	data_April <- MakeERKsTimeSeries ('Ebble_CE1_2013_04_25', 'Ebble_CE1_2013_04_25_ER_Ks')
+
+	data02 <- CutDataDataSetByTime (indata = data_April, timeinterval = 120, n_date = as.Date ('2013-04-25'),  lon = -1.92392, lat = 51.02816)
+	x_fit <- FitProductionCurve ( data02, which_return = 1, lower_Pmax = 0.01, upper_Pmax = 0.1, lower_Ik = 20, upper_Ik = 500 )
+
+
+	data03 <- CalcDOPhot (data02)
+	with ( data03, plot (  PARraw, DO_Phot ))
+	
+	print (x_fit)
+
+
+
+
+	data_April <- MakeERKsTimeSeries ('Ebble_CE1_2013_04_25', 'Ebble_CE1_2013_04_25_ER_Ks')
+	n_dates <- 	unique ( as.Date ( data_April$date))
+	parameter_df <- as.data.frame (matrix (nrow = length (n_dates), ncol = 3))
+
+		
+	for ( i in 1:length (n_dates) )
+		{
+		data02 <- CutDataDataSetByTime (indata = data_April, timeinterval = 120, n_date = n_dates[i],  lon = -1.92392, lat = 51.02816)
+		x_fit <- FitProductionCurve ( data02, which_return = 1, lower_Pmax = 0.01, upper_Pmax = 0.1, lower_Ik = 20, upper_Ik = 500 )
+		parameter_df[i,2:3] <- x_fit
+		}
+
+	
+	parameter_df[,1] <- n_dates
+	names (parameter_df) <- c ('date1','Pmax','I_k')
+	
+	setwd ( dirdmp )
+	assign ( 'Ebble_CE1_2013_04_25_Pmax_Ik', parameter_df )
+	save ( Ebble_CE1_2013_04_25_Pmax_Ik, file = 'Ebble_CE1_2013_04_25_Pmax_Ik.rda')
+
+	
+
+	
+	
+		
+	
+	#################################
+	#check fit of ER and Ks
+	#check fit of ER and Ks
+	x1 <- MakeERKsTimeSeries ('Ebble_CE1_2013_04_25', 'Ebble_CE1_2013_04_25_ER_Ks')
+	xss <- ModelDONightTime(indata = x1, c_night = 'night0002')
+	xss <- ModelDONightTime(indata = x1, c_night = 'night0003')
+	#################################
+	
+	
+	x1 <- MakeERKsTimeSeries ('Ebble_CE1_2013_04_25', 'Ebble_CE1_2013_04_25_ER_Ks')
+	#data (DO_Ebble_2013_fittedParams)
+	data (Ebble_CE1_2013_04_25_Pmax_Ik)
+	#xss <- ModelDODayNight (indata = x1, inPhot = Ebble_CE1_2013_04_25_Pmax_Ik)
+	}

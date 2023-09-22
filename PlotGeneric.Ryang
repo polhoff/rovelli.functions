@@ -1,0 +1,55 @@
+
+PlotGeneric <- function ( indata = output_analysis, row_number )
+	{
+	c_names <- names (indata)
+	
+	for ( i in 1:length (c_names))
+		{
+		assign ( c_names[i], indata[[i]] )
+		}
+
+	if ( missing(row_number)) { print (meta_data_rovelli) ; return () }
+	c_sub <- meta_data_rovelli[row_number,]
+
+	c_river <- meta_data_rovelli$river[row_number]
+	check_grep <- grep ( c_river, c_names )
+	stopifnot ( length (check_grep) > 1)
+	
+	
+	output_ModelDayNight <- 
+	
+	
+	c_windfile <- paste ( c_sub$river, c_sub$site, c_sub$start_date_ch, 'wind', sep = '_')
+	c_basedata <- paste ( c_sub$river, c_sub$site, c_sub$start_date_ch, sep = '_')
+	c_basedata_ER <- paste ( c_basedata, '_ER_Ks', sep = '' )
+	c_basedata_Pmax <- paste ( c_basedata, '_Pmax_Ik', sep = '' )
+
+	PlotWindspeed (c_rda = c_windfile, c_indata1 = c_windfile)
+
+	NewW(); 	PlotDayNight ( c_indata )
+	NewW(); 	PlotDeficit_DODiff ( c_indata )
+
+	NewW(); 	PlotRegressionER_Ks ( c_indata = c_indata )
+	NewW(); 	PlotRegressionER_Ks_01 ( c_indata = c_indata )
+	NewW(); 	PlotRegressionER_Ks_02 ( c_indata = c_indata )
+	NewW(); 	PlotRegressionER_Ks_03 ( c_indata = c_indata )
+	NewW(); 	PlotRegressionER_Ks_Res ( c_indata = c_indata )
+
+	NewW(); 	PlotDOPhot ( compute_DOPhot )
+
+	NewW(); 	PlotModelOutputNightTime ( Sem_AS2_2013_05_01_ModelNight )
+	NewW();
+	
+	PlotModelOutputDay ( indata = Sem_AS2_2013_05_01_ModelDayNight )
+	
+	PlotDOObsSimDiff ( indata = Sem_AS2_2013_05_01_ModelDayNight, SiteCode = 'AS2', start_date = as.POSIXct('2013-04-30'), end_date = as.POSIXct('2013-05-03 05:30:00'))
+	
+	PlotDOObsSimDiff ( indata = Sem_AS2_2013_05_01_ModelDayNight, SiteCode = 'AS2', start_date = as.POSIXct('2013-04-30'), end_date = as.POSIXct('2013-05-03 05:30:00'))
+	
+	NewW(); PlotPartitions (indata = Sem_AS2_2013_05_01_ModelDayNight)
+	}
+
+#library (parker); library (rovelli)
+#output_analysis <- AnalysisMaySem ()	
+#PlotMaySem()
+#ClsDev()

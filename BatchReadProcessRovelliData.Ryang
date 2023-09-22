@@ -1,0 +1,13 @@
+
+BatchReadProcessRovelliData <- function ( infile1, infile2, outname1, outname2, infil)
+	{
+
+	x1 <- ReadRovelliDataOrig ( infile1, outname = 'Ebble_CE1_2013_08_08_orig' )
+	x1 <- ReadRovelliDataOrig ( infile2, = 'C2CE1wind_summer.gnumeric', outname = 'Ebble_CE1_2013_08_08_wind_orig' )
+
+	lon = LonLatSite ('CE1')['lon']
+	lat = LonLatSite ('CE1')['lat']
+	ProcessRovelliDataOrig ( infile = 'Ebble_CE1_2013_08_08_orig', c_library = 'rovelli', outname = 'Ebble_CE1_2013_08_08', lon, lat )
+
+	}
+

@@ -1,0 +1,355 @@
+
+FullAnalysisEbbleManta <- function ( SiteCode )
+	{
+
+	
+	#library (rovelli)
+	library (PenmanMonteith)
+
+	SiteCode <- 'CE1'
+	#once these have been processed
+	#the resulting datasets must be saved in the library 'rovelli'
+	#then the library re-installed including the new datasets
+
+		
+	x1 <- ReadRovelliDataOrig ( infile = 'Ebble_CE1_2013.gnumeric', outname = 'Ebble_CE1_2013_mnt_orig' )
+	
+
+	#again, once these have been processed
+	#the resulting datasets must be saved in the library 'rovelli'
+	#then the library re-installed including the new datasets
+	lon = LonLatSite (SiteCode)['lon'] ; lat = LonLatSite (SiteCode)['lat']
+	ProcessRovelliDataOrig ( infile = 'Ebble_CE1_2013_mnt_orig', c_library = 'rovelli', outname = 'Sem_AS2_2013_05_01', lon, lat )
+
+	load ( paste ( dirdmp, 'Sem_AS2_2013_05_01.rda', sep = ''))
+	
+	data (Sem_AS2_2013_05_01_PAR_orig)
+		
+	str (Sem_AS2_2013_05_01_PAR_orig)
+	Sem_AS2_2013_05_01_PAR_orig$date <- as.POSIXct (Sem_AS2_2013_05_01_PAR_orig$date)
+	with (Sem_AS2_2013_05_01_PAR_orig, plot ( date, PARraw ))
+	summary (Sem_AS2_2013_05_01_PAR_orig)
+	
+	
+	#additional processing for Sem because of PAR problem
+	banana = with (Sem_AS2_2013_05_01_PAR_orig, approxfun ( date, PARraw ))
+	Sem_AS2_2013_05_01$PARraw <- banana ( Sem_AS2_2013_05_01$date )
+
+
+	str (Sem_AS2_2013_05_01)
+	head(Sem_AS2_2013_05_01)
+
+	save ( Sem_AS2_2013_05_01, file = paste ( dirdmp, 'Sem_AS2_2013_05_01.rda', sep = ''))
+	load ( paste ( dirdmp, 'Sem_AS2_2013_05_01.rda', sep = ''))
+
+
+
+	indata <- Sem_AS2_2013_05_01
+	
+	with  (Sem_AS2_2013_05_01, plot (date, DO))
+	with  (Sem_AS2_2013_05_01, plot (date, DO_diff))
+	with  (Sem_AS2_2013_05_01, plot (date, DO_diff_diff))
+
+	
+	
+	sss <- (Sem_AS2_2013_05_01$DO_diff_diff)^2
+	x_ndx <- which (sss > (0.1 ^ 2))
+	x_ndx <- c ( x_ndx - 1, x_ndx, x_ndx + 1)
+	x_ndx <- sort ( unique ( x_ndx ))
+
+
+
+
+	Sem_AS2_2013_05_01$qualityFilter <- 3
+	Sem_AS2_2013_05_01$qualityFilter[x_ndx] <- 1
+	
+	data_sub <- Sem_AS2_2013_05_01[Sem_AS2_2013_05_01$qualityFilter < 2,]
+
+	with  (Sem_AS2_2013_05_01, plot (date, DO_diff_diff))
+    points (data_sub$date, data_sub$DO_diff_diff, col = 'red')
+
+
+    with  (Sem_AS2_2013_05_01, plot (date, DO_diff))
+    points (data_sub$date, data_sub$DO_diff, col = 'red')
+
+    
+    with  (Sem_AS2_2013_05_01, plot (date, DO))
+    points (data_sub$date, data_sub$DO, col = 'red')
+
+
+
+
+
+	str (Sem_AS2_2013_05_01)
+	head(Sem_AS2_2013_05_01)
+
+	save ( Sem_AS2_2013_05_01, file = paste ( dirdmp, 'Sem_AS2_2013_05_01.rda', sep = ''))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+	
+	PlotWindspeed (c_rda = "Sem_AS2_2013_05_01_wind_orig", c_indata1 = "Sem_AS2_2013_05_01_wind_orig")
+
+
+	ER_Ks_timeseries <- MakeERKsTimeSeries ('Sem_AS2_2013_05_01', 'Sem_AS2_2013_05_01_ER_Ks', which_return = 2)
+
+	#PlotPmaxByHourSegment ( c_indata1 = 'Sem_AS2_2013_05_01', c_indata2 = 'ER_Ks_timeseries', c_library = 'rovelli', n_date = as.Date ('2013-04-26'), timeinterval = 120, lon = -1.92392, lat = 51.02816, l_png = F, l_tif1 = F, cex_axis = 1.6, cex_lab = 1.6, cex_main = 1.6, n_height = 600, SiteCode, outfile = 'PmaxByHour.png' )
+
+
+
+	PlotDayNight ( 'Sem_AS2_2013_05_01' )
+	PlotDeficit_DODiff ( 'Sem_AS2_2013_05_01' )
+
+
+
+	#calculate coefficients ER and Ks and save as new data sets
+	#the resulting datasets must be saved in the library 'rovelli'
+	#then the library re-installed including the new datasets
+	FitRegressionParameters ( c_indata = 'Sem_AS2_2013_05_01' )
+	PlotRegressionER_Ks ( c_indata = 'Sem_AS2_2013_05_01' )
+	PlotRegressionER_Ks_01 ( c_indata = 'Sem_AS2_2013_05_01' )
+	PlotRegressionER_Ks_02 ( c_indata = 'Sem_AS2_2013_05_01' )
+	PlotRegressionER_Ks_03 ( c_indata = 'Sem_AS2_2013_05_01' )
+	PlotRegressionER_Ks_Res ( c_indata = 'Sem_AS2_2013_05_01' )
+
+	#make ER Ks time series for a particular data set
+	#ER_Ks_timeseries <- MakeERKsTimeSeries ('Sem_AS2_2013_05_01', 'Sem_AS2_2013_05_01_ER_Ks')
+	
+	
+	data_May <- MakeERKsTimeSeries ('Sem_AS2_2013_05_01', 'Sem_AS2_2013_05_01_ER_Ks')
+	#data_April <- MakeERKsTimeSeries ('Ebble_CE1_2013_04_25', 'Ebble_CE1_2013_04_25_ER_Ks')
+	plot(data_May$PARraw) 
+	data03 <- CalcDOPhot (data_May)
+	with ( data03, plot (  PARraw, DO_Phot))
+
+
+
+	data_May_sub <- data_May[data_May$PARraw > 10,]
+	x_fit <- FitProductionCurve ( data_May_sub, which_return = 1, lower_Pmax = 0.01, upper_Pmax = 0.1, lower_Ik = 20, upper_Ik = 500 )
+	data03 <- CalcDOPhot (data_May_sub)
+	summary(data03)
+	with ( data03, plot (  PARraw, DO_Phot))
+	
+	n_dates <- 	unique ( as.Date ( data_May$date))
+	parameter_df <- as.data.frame (matrix (nrow = length (n_dates), ncol = 3))
+	parameter_df[,2:3] <- x_fit
+	parameter_df[,1] <- n_dates
+
+	names (parameter_df) <- c ('date1','Pmax','I_k')
+
+
+	setwd ( dirdmp )
+	assign ( 'Sem_AS2_2013_05_01_Pmax_Ik', parameter_df )
+	save ( Sem_AS2_2013_05_01_Pmax_Ik, file = 'Sem_AS2_2013_05_01_Pmax_Ik.rda')
+
+
+	
+	data02 <- CutDataDataSetByTime (indata = data_May, timeinterval = 120, n_date = as.Date ('2013-05-01'),  lon = -1.92392, lat = 51.02816)
+	x_fit <- FitProductionCurve ( data02, which_return = 1, lower_Pmax = 0.01, upper_Pmax = 0.1, lower_Ik = 20, upper_Ik = 500 )
+	data03 <- CalcDOPhot (data02)
+	with ( data03, plot (  PARraw, DO_Phot))
+
+
+	data02 <- CutDataDataSetByTime (indata = data_May, timeinterval = 120, n_date = as.Date ('2013-05-02'),  lon = -1.92392, lat = 51.02816)
+	x_fit <- FitProductionCurve ( data02, which_return = 1, lower_Pmax = 0.01, upper_Pmax = 0.1, lower_Ik = 20, upper_Ik = 500 )
+	data03 <- CalcDOPhot (data02)
+	with ( data03, plot (  PARraw, DO_Phot))
+
+
+
+	
+
+	
+	
+		
+	
+	
+	
+	
+
+	#################################
+	#model entire timeseries
+		
+	library (rovelli)
+	library (PenmanMonteith)
+
+
+	data (Ebble_CE1_2013_04_25)
+	data (Ebble_CE1_2013_04_25_Pmax_Ik)
+	data (Ebble_CE1_2013_04_25_ER_Ks)
+	data (DO_Ebble)
+
+
+	print (Ebble_CE1_2013_04_25_Pmax_Ik)
+	print (Ebble_CE1_2013_04_25_ER_Ks_for)
+
+
+
+	ER <- mean (Ebble_CE1_2013_04_25_ER_Ks_for$ER)
+	Ks <- mean (Ebble_CE1_2013_04_25_ER_Ks_for$Ks)
+	Pmax <- mean (Ebble_CE1_2013_04_25_Pmax_Ik$Pmax)
+	I_k <- mean (Ebble_CE1_2013_04_25_Pmax_Ik$I_k)
+
+
+
+
+	lon <- LonLatSite ('CE1')['lon']
+	lat <- LonLatSite ('CE1')['lat']
+
+
+	light <- CalcETSWSubDaily (Ebble_CE1_2013_04_25$date, lon, lat)
+	plot ( light$Bo0, Ebble_CE1_2013_04_25$PARraw )
+
+
+	fit <- lm (Ebble_CE1_2013_04_25$PARraw ~ light$Bo0)
+	#Call:
+	#lm(formula = Ebble_CE1_2013_04_25$PARraw ~ light$Bo0)
+
+	#Coefficients:
+	#(Intercept)    light$Bo0  
+	#    -7.8538       0.3532  
+	ModelledLight <- -7.8538 + 0.3532 * light$Bo0
+
+
+
+	x1 <- DO_Ebble
+	x1$ER <- ER
+	x1$Ks <- Ks
+	x1$Pmax <- Pmax
+	x1$I_k <- I_k
+	x1$ModelledLight <-  -7.8538 + 0.3532 * x1$Bo0
+
+
+	head(x1)
+	start_ndx <- DO_Ebble$date > as.POSIXct ('2013-04-24')
+	end_ndx <- DO_Ebble$date < as.POSIXct ('2013-07-31')
+
+
+	data_sub <- x1[x1$date %in% x1$date[start_ndx & end_ndx],]
+
+	
+	DO_Ebble_ModelDayNight <- ModelDODayNight02 (indata = data_sub)
+
+	
+	
+	
+	
+	data_sub <- Sem_AS2_2013_05_01_ModelDayNight[x1$daynight1 != 'day0004',]
+	banana <- approxfun ( data_sub$date, data_sub$Cnow )
+	
+	data_sub <- Sem_AS2_2013_05_01_ModelDayNight[x1$daynight1 != 'day0004',]
+	PlotModelOutputDay ( indata = data_sub )
+	
+	Cnow_additional <- banana ( Sem_AS2_2013_05_01$date[Sem_AS2_2013_05_01$qualityFilter == 1] )
+	points ( Sem_AS2_2013_05_01$date[Sem_AS2_2013_05_01$qualityFilter == 1], Cnow_additional, col = 'grey65', pch = 2, cex = 0.4 )
+	
+	#################################
+
+	
+	
+	
+	#using 
+	data(Sem_AS2_Pmax_Ik)
+	print (Sem_AS2_Pmax_Ik)
+	Sem_AS2_2013_05_01_ModelDayNight <- ModelDODayNight (indata = x1, inPhot = Sem_AS2_Pmax_Ik)
+	PlotModelOutputDay ( indata = Sem_AS2_2013_05_01_ModelDayNight )
+		
+	
+	
+	#################################
+	#using filtered data
+	#library (rovelli)
+	#check fit of ER and Ks
+	#check fit of ER and Ks
+	x1 <- MakeERKsTimeSeries ('Sem_AS2_2013_05_01', 'Sem_AS2_2013_05_01_ER_Ks', which_return = 1)
+	Sem_model_night01 <- ModelDONightTime(indata = x1, c_night = 'night0002')
+	Sem_model_night02 <- ModelDONightTime(indata = x1, c_night = 'night0003')
+	Sem_AS2_2013_05_01_ModelNight <- rbind ( Sem_model_night01, Sem_model_night02 )
+	PlotModelOutputNightTime ( Sem_AS2_2013_05_01_ModelNight )
+	#################################
+	
+
+	
+	}
+
+
+
+#Славное море — священный Байкал
+
+#Славное море — священный Байкал,
+#Славный корабль — омулёвая бочка.
+#Эй, баргузин, пошевеливай вал,
+#Молодцу плыть недалёчко.
+
+#Долго я тяжкие цепи влачил,
+#Долго скитался в горах Акатуя;
+#Старый товарищ бежать пособил —
+#Ожил я, волю почуя.
+
+#Шилка и Нерчинск не страшны теперь,
+#Горная стража меня не поймала,
+#В дебрях не тронул прожорливый зверь,
+#Пуля стрелка — миновала.
+
+#Шёл я и в ночь, и средь белого дня,
+#Вкруг городов озираяся зорко,
+#Хлебом кормили чалдонки меня,
+#Парни снабжали махоркой.
+
+#Славное море — священный Байкал,
+#Славный мой парус — кафтан дыроватый,
+#Эй, баргузин, пошевеливай вал,
+#Слышатся грома раскаты.
+
+
+
+#Ти ж мене підманула
+#Туман яром
+#Розпрягайте, хлопці, коней
+#Тиха вода
+#Ой, кряче, кряче
+#Ох і розвивайся та сухий дубе
+#Сидить Миколай
+#Їхав, їхав козак містом
+
+
+#Несе Галя воду
+#Благослови душе моя Господа
+#Ой, ходить сон коло вікон		https://www.youtube.com/watch?v=baTP2eqgz-I&list=PLFF586F18CDED88A8&index=17
+#Ой, у полі криниченька			https://www.youtube.com/watch?v=E2ws7QTGOgM
+#Гандзя 
+#Чоботи
+#Цвіте терен
